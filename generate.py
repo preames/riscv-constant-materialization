@@ -1,9 +1,44 @@
+#!/usr/bin/env python3
 
-depth = 2
-target_constant = 8589934593
+"""A script to generate a synthesis problem for constant materialization.
+
+This script can be used to generate an LLVM IR program which posses as
+a synthesis problem (suitable for minotaur-cs) the task of finding a
+sequence of instructions suitable for materializing the given constant
+on riscv64.
+"""
+
+import argparse
+from argparse import RawTextHelpFormatter
+parser = argparse.ArgumentParser(
+    description=__doc__, formatter_class=RawTextHelpFormatter
+)
+parser.add_argument(
+    "--number",
+    default="0xFFFF",
+    help='The constant to generate a materialization sequence for',
+)
+parser.add_argument(
+    "--depth",
+    default="3",
+    help='The depth of the sequence to search for',
+)
+
+parser.add_argument(
+    "--isa",
+    default="riscv64-isa.ll",
+    help='IR file defining instructions to consider during synthesis',
+)
+
+args = parser.parse_args()
+
+depth = int(args.depth)
+# Support both hex and base 10 constants
+target_constant = int(args.number, 0)
+isa_definition = args.isa
 
 instructions = []
-with open("riscv64-isa.ll", "r") as f:
+with open(isa_definition, "r") as f:
     for line in f.readlines():
         if not line.startswith("define"):
             continue
@@ -24,7 +59,7 @@ with open("riscv64-isa.ll", "r") as f:
         pass
     pass
 
-with open("riscv64-isa.ll", "r") as f:
+with open(isa_definition, "r") as f:
     for line in f.readlines():
         print (line.rstrip())
         pass
@@ -89,7 +124,7 @@ print("}")
 
 
 print("define i64 @tgt(" + ", ".join(args) + ") {")
-print(" ret i64 " + str(target_constant))
+print(" ret i64 " + str(target_constant) + " ;; " + hex(target_constant))
 print("}")
       
 

@@ -27,10 +27,8 @@ The default timeout is 10 seconds, this sets it to 99999 seconds or a little ove
 
 ## Usage
 
-Edit the generate.py script to adjust depth and target constant.
-
 ```
-python generate.py > unoptimized.ll
+python generate.py --depth=N --number=<target-constant> > unoptimized.ll
 <llvm-build-dir>/bin/opt -S -O3 unoptimized -o output.ll
 time ./minotaur-cs /scratch/preames/synthesis/output.ll
 ```
@@ -90,7 +88,7 @@ This is one of several depth two sequences for producing this value.
 
 Now, let's pick something a bit harder.  For the constant 8589935839385694 (chosen arbitrarily, this is not an interesting number to my knowledge), LLVM currently emits a load through the constant pool.
 
-At depth 1 and 2, we quickly return Unsat.  At depth 3, unsat takes about 15s.  At depth 4, unsat takes 16m.  Higher depths were still running when this page was written, but hopefully the scalability concern is obvious.  :)
+At depth 1 and 2, we quickly return Unsat.  At depth 3, Unsat takes about 15s.  At depth 4, UNSTAT takes 16m.  At depth 5, out of memory occured after 7 hours without returning either SAT or Unsat.  Hopefully the scalability concern is obvious.  :)
 
 
 ## Scalability
