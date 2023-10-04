@@ -2,12 +2,6 @@
 ;; with XLEN=64 (i.e. rv64).  Current instruction set taken
 ;; from RISCVMatInt.cpp
 
-;; TODO: Remove this, no longer needed by generator.
-define i64 @x0() {
-  ret i64 0
-}
-
-;; TODO: immarg
 define i64 @lui(i20 signext %imm) {
   %imm.ext = sext i20 %imm to i64
   %imm.shl = shl i64 %imm.ext, 12
@@ -19,20 +13,25 @@ define i64 @add(i64 %rs1, i64 %rs2) {
   ret i64 %res
 }
 
-;; TODO: immarg
 define i64 @addi(i64 %rs1, i12 signext %imm) {
   %imm.ext = sext i12 %imm to i64
   %res = add i64 %rs1, %imm.ext
   ret i64 %res
 }
 
-;; TODO: immarg
 define i64 @addiw(i64 %rs1, i12 signext %imm) {
   %imm.ext = sext i12 %imm to i64
   %add = add i64 %rs1, %imm.ext
   %add.trunc = trunc i64 %add to i32
   %add.sext = sext i32 %add.trunc to i64
   ret i64 %add.sext
+}
+
+
+define i64 @xori(i64 %rs1, i12 signext %imm) {
+  %imm.ext = sext i12 %imm to i64
+  %res = xor i64 %rs1, %imm.ext
+  ret i64 %res
 }
 
 define i64 @sh1add(i64 %rs1, i64 %rs2) {
@@ -101,6 +100,23 @@ define i64 @bclri(i64 %rs1, i6 zeroext %imm) {
   ret i64 %res
 }
 
+define i64 @binvi(i64 %rs1, i6 zeroext %imm) {
+  %imm.ext = zext i6 %imm to i64
+  %imm.masked = and i64 %imm.ext, 63
+  %bit = shl i64 1, %imm.masked
+  %res = xor i64 %rs1, %bit
+  ret i64 %res
+}
+
+declare i64 @llvm.fshr.i64(i64 %a, i64 %b, i64 %c)
+
+define i64 @rori(i64 %rs1, i6 zeroext %imm) {
+  %imm.ext = zext i6 %imm to i64
+  %imm.masked = and i64 %imm.ext, 63
+  %res = call i64 @llvm.fshr.i64(i64 %rs1, i64 %rs1, i64 %imm.masked)
+  ret i64 %res
+}
+
 define i64 @slli(i64 %rs1, i6 zeroext %imm) {
   %imm.ext = zext i6 %imm to i64
   %imm.masked = and i64 %imm.ext, 63
@@ -122,6 +138,7 @@ define i64 @srai(i64 %rs1, i6 zeroext %imm) {
   ret i64 %res
 }
 
+; Consider adding MULH, MULHU, and MULHSU
 define i64 @mul(i64 %rs1, i64 %rs2) {
   %res = mul i64 %rs1, %rs2
   ret i64 %res
